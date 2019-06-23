@@ -1,0 +1,41 @@
+- hosts: master
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: initialize the cluster with config file
+      shell: docker swarm init --advertise-addr {{ manager_public_ip }} >> swarm-init.log
+      register: swarm_init
+      args:
+        chdir: $HOME
+        creates: swarm-init.log
+
+    - name: get --discovery-token-ca-cert-hash from join command
+      when: swarm_init is succeeded
+      shell: swarm token create --print-join-command | sed 's/.*--discovery-token-ca-cert-hash //' | awk '{print $1}'
+      register: discovery_token_ca_cert_hash
+
+- hosts: 127.0.0.1
+  connection: local
+  tasks:
+    - set_fact: hash={{ hostvars['master'].discovery_token_ca_cert_hash }}
+
+    - name: Read swarm-join.yml and add discovery_token_ca_cert_hash
+      shell: cat ../swarm-join.yml | yq -y '.discovery.bootstrapToken.caCertHashes = [ "{{ hash.stdout }}" ]'
+      register: yml
+
+    - name: Write discovery_token_ca_cert_hash updates to swarm-join.yml
+      shell: echo "{{ yml.stdout }}" > ../swarm-join.yml
+
+- hosts: workers
+  become: yes
+  tasks:
+  - name: send swarm join config file to master
+    copy:
+      src: ../swarm-join.yml
+      dest: ~/swarm-join.yml
+
+  - name: join cluster
+    shell: swarm join --config swarm-join.yml >> swarm-join.log
+    args:
+      chdir: $HOME
+      creates: swarm-join.log

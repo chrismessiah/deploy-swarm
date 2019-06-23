@@ -1,0 +1,8 @@
+*.retry
+provision-servers.log
+istio-*
+*.DS_Store
+teardown.sh
+hosts.txt
+ansible_hosts.cfg
+playbooks/poc/MetalLB/configmap.yml
