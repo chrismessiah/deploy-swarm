@@ -5,4 +5,4 @@ CLOUD_PROVIDER="DIGITAL_OCEAN"
 
 # ****************************** SCRIPT CONFIG *********************************
 
-NODES=0
+NODES=2

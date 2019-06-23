@@ -24,7 +24,6 @@ provision_servers () {
 
   cat <<EOT >> teardown.sh
 #!/bin/bash
-rm -f ~/.kube/config
 hcloud server delete manager
 EOT
 

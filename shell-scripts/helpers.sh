@@ -5,5 +5,5 @@ iz_complete () {
   	osascript -e 'display notification "Cluster setup complete"'
   fi
 
-  watch -n 2 kubectl get pods --all-namespaces -o wide
+  # watch -n 2 kubectl get pods --all-namespaces -o wide
 }

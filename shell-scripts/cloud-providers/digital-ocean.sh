@@ -29,7 +29,6 @@ provision_servers () {
 
   cat <<EOT >> teardown.sh
 #!/bin/bash
-rm -f ~/.kube/config
 doctl compute droplet delete -f manager ${NODE_STRING}
 sleep 3
 doctl compute droplet list
