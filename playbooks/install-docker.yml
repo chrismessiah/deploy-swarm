@@ -1,19 +1,18 @@
 - hosts: all
   become: yes
   tasks:
-   - name: add Docker's apt-key
-     apt_key:
-       url: https://download.docker.com/linux/ubuntu/gpg
-       state: present
+    - name: add Docker's apt-key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
 
-   - name: add Docker's APT repository
-     apt_repository:
-      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable
-      state: present
-      filename: 'kubernetes'
+    - name: add Docker's APT repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable
+        state: present
 
-   - name: install Docker
-     apt:
-       name: docker-ce=18.06.2~ce~3-0~ubuntu
-       state: present
-       update_cache: true
+    - name: install Docker
+      apt:
+        name: docker-ce={{ docker_version }}
+        state: present
+        update_cache: true
