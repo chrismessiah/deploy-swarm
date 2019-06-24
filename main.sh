@@ -20,3 +20,4 @@ create_ansible_config
 ansible-playbook playbooks/main.yml -i ansible_hosts.cfg
 
 iz_complete
+cat hosts.txt

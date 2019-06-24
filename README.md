@@ -2,14 +2,44 @@
 
 ```sh
 docker node ls
-docker service create --name my-web1 --publish 8081:80 --replicas 2 nginx
+
+docker run -it --rm ubuntu:18.04 /bin/bash
+
+docker network create -d overlay --attachable ovnet1
+docker network create -d overlay --attachable --opt encrypted ovnet2
+
+docker service create --name hello-world --network ovnet1 chrismessiah/hello-world
+
+# publishes the port on ALL SWARM NODES
+docker service create --name my-nginx --publish 8080:80 --replicas 2 nginx
+
+# publishes the port on THE HOST(S)
+docker service create --name my-nginx --publish mode=host,target=80,published=8080 --replicas 2 nginx
+
+docker service rm hello-world
+
 docker service ls
 docker service ps my-web1
 docker service scale my-web1=3
-
 ```
 
-## Create an overlay network
+## Networking 101
+
+```sh
+# Resolve containers locally by --name on user-defined networks
+docker network create dnet1
+docker run -d --name my-nginx --net dnet1 nginx
+docker run -it --rm --net dnet1 ubuntu:18.04 /bin/bash
+-# curl my-nginx
+
+# Resolve containers across swarm by --name on user-defined OVERLAY networks
+docker network create -d overlay --attachable ovnet1
+docker service create --name my-nginx2 --network ovnet1 -e constraint:node==node1 nginx
+docker run -it --rm --network ovnet1 ubuntu:18.04 /bin/bash
+-# curl my-nginx2
+```
+
+### Overlay networks
 
 When you initialize a swarm or join a Docker host to an existing swarm, two new networks are created on that Docker host:
 
