@@ -61,7 +61,7 @@ EOT
   done
   echo "" >> ansible_hosts.cfg
 
-  echo "SSH command to manager is:        ssh root@$MANAGER_PUBLIC_IP" >> hosts.txt
+  echo "SSH command to manager is:       ssh root@$MANAGER_PUBLIC_IP" >> hosts.txt
   for (( i = 1; i <= $NODES; i++ )); do
     NODE_IP=`cat creating_servers.log | grep "node$i" | awk '{print $3}'`
     echo "SSH command to node$i is:         ssh root@$NODE_IP" >> hosts.txt

@@ -20,7 +20,7 @@
     - set_fact: join_token={{ hostvars['manager'].join_token }}
 
     - name: join cluster
-      shell: docker swarm join --token {{ join_token.stdout}} {{ manager_public_ip }}:2377 >> swarm-join.log
+      shell: docker swarm join --token {{ join_token.stdout }} {{ manager_public_ip }}:2377 >> swarm-join.log
       args:
         chdir: $HOME
         creates: swarm-join.log

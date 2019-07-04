@@ -62,3 +62,9 @@ docker network create -d overlay --attachable my-overlay
 # this option before using it in production.
 docker network create --opt encrypted -d overlay --attachable my-overlay
 ```
+
+# Certbot
+
+```sh
+certbot --nginx --register-unsafely-without-email --agree-tos -d 209.97.189.31.nip.io
+```

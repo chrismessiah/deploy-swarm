@@ -1,0 +1,14 @@
+- hosts: all
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: add certbot's ppa repo
+      apt_repository:
+        repo: ppa:certbot/certbot
+        state: present
+
+    - name: install nginx and certbot
+      apt:
+        name: ["nginx", "certbot", "python-certbot-nginx"]
+        state: present
+        update_cache: true

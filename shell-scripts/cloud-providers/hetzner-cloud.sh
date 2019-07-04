@@ -66,7 +66,7 @@ EOT
   done
   echo "" >> ansible_hosts.cfg
 
-  echo "SSH command to manager is:        ssh root@$MANAGER_PUBLIC_IP" >> hosts.txt
+  echo "SSH command to manager is:       ssh root@$MANAGER_PUBLIC_IP" >> hosts.txt
   for (( i = 1; i <= $NODES; i++ )); do
     NODE_IP=`hcloud server list -o noheader | grep "node$i" | awk '{print $4}'`
     echo "SSH command to node$i is:         ssh root@$NODE_IP" >> hosts.txt
