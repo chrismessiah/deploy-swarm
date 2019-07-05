@@ -75,4 +75,6 @@ ls /etc/letsencrypt/live/209.97.189.31.nip.io/
   fullchain.pem # ssl_certificate in NGINX config
   privkey.pem # ssl_certificate_key in NGINX config
 
+
+/etc/letsencrypt/ssl-dhparams.pem
 ```
