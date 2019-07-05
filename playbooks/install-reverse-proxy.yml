@@ -7,16 +7,21 @@
         repo: ppa:certbot/certbot
         state: present
 
-    - name: install nginx and certbot
+    - name: install nginx and certbot and PIP
       apt:
-        name: ["nginx", "certbot", "python-certbot-nginx"]
+        name: ["nginx", "certbot", "python-certbot-nginx", "python3-pip"]
         state: present
         update_cache: true
 
-- hosts: all
-  become: yes
-  gather_facts: false
-  tasks:
+    - name: install Mustache templating engine
+      pip:
+        name: pystache
+
+    - name: send nginx template file
+      copy:
+        src: ../nginx-conf/template.conf.nginx
+        dest: /etc/nginx/conf.d/template.conf.nginx
+
     - name: get IP
       when: use_nip_domain is defined and use_nip_domain == "true"
       shell: ifconfig eth0 | grep 'inet ' | awk '{print $2}'
@@ -31,3 +36,16 @@
       args:
         chdir: $HOME
         creates: certbot.log
+
+    - name: Create nginx config for a site
+      shell: pystache "$(cat template.conf.nginx)" '{"domain":"{{ domain }}"}' >> site1.conf
+      args:
+        chdir: /etc/nginx/conf.d/
+        creates: site1.conf
+
+    - name: Restart NGINX
+      systemd:
+        name: nginx
+        state: restarted
+        enabled: yes
+        daemon_reload: yes

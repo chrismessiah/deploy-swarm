@@ -72,7 +72,7 @@ certbot --nginx --register-unsafely-without-email --agree-tos -d 209.97.189.31.n
 ls /etc/letsencrypt/live/209.97.189.31.nip.io/
   cert.pem
   chain.pem
-  fullchain.pem
-  privkey.pem
+  fullchain.pem # ssl_certificate in NGINX config
+  privkey.pem # ssl_certificate_key in NGINX config
 
 ```
