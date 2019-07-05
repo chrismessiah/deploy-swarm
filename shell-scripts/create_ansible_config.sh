@@ -7,4 +7,6 @@ docker_version=$DOCKER_VERSION
 nodes=$NODES
 EOT
 
+  [ ! -z "$USE_NIP_DOMAIN" ] && echo "use_nip_domain=$USE_NIP_DOMAIN" >> ansible_hosts.cfg
+
 }

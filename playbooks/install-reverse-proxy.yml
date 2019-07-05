@@ -1,0 +1,33 @@
+- hosts: all
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: add certbot's ppa repo
+      apt_repository:
+        repo: ppa:certbot/certbot
+        state: present
+
+    - name: install nginx and certbot
+      apt:
+        name: ["nginx", "certbot", "python-certbot-nginx"]
+        state: present
+        update_cache: true
+
+- hosts: all
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: get IP
+      when: use_nip_domain is defined and use_nip_domain == "true"
+      shell: ifconfig eth0 | grep 'inet ' | awk '{print $2}'
+      register: ip
+
+    - name: set domain
+      when: use_nip_domain is defined and use_nip_domain == "true"
+      set_fact: domain={{ ip.stdout }}.nip.io
+
+    - name: get letsencrypt cert
+      shell: certbot certonly --nginx --register-unsafely-without-email --agree-tos -d {{ domain }} >> certbot.log
+      args:
+        chdir: $HOME
+        creates: certbot.log

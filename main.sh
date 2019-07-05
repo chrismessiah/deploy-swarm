@@ -19,5 +19,12 @@ create_ansible_config
 
 ansible-playbook playbooks/main.yml -i ansible_hosts.cfg
 
-iz_complete
+if [ $? -eq 0 ]; then
+    MESSAGE="Cluster setup complete"
+else
+    MESSAGE="Cluster setup failed"
+fi
+
+alert_notice
+
 cat hosts.txt

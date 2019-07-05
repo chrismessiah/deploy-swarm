@@ -1,2 +1,3 @@
 - import_playbook: install-docker.yml
 - import_playbook: initalize-swarm.yml
+- import_playbook: install-reverse-proxy.yml

@@ -67,4 +67,12 @@ docker network create --opt encrypted -d overlay --attachable my-overlay
 
 ```sh
 certbot --nginx --register-unsafely-without-email --agree-tos -d 209.97.189.31.nip.io
+
+# The following folder contains symbolic links to the files
+ls /etc/letsencrypt/live/209.97.189.31.nip.io/
+  cert.pem
+  chain.pem
+  fullchain.pem
+  privkey.pem
+
 ```

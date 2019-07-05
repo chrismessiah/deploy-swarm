@@ -1,9 +1,7 @@
-iz_complete () {
+alert_notice () {
   KERNEL=$(uname)
   if [ "$KERNEL" == "Darwin" ]; then
-  	say "Swarm setup complete" -v Samantha
-  	osascript -e 'display notification "Swarm setup complete"'
+  	say $MESSAGE -v Samantha
+  	osascript -e "display notification '$MESSAGE'"
   fi
-
-  # watch -n 2 kubectl get pods --all-namespaces -o wide
 }
