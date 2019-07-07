@@ -19,7 +19,7 @@
 
     - name: send nginx template file
       copy:
-        src: ../nginx-conf/template.conf.nginx
+        src: ../assets/nginx-conf/template.conf.nginx
         dest: /etc/nginx/conf.d/template.conf.nginx
 
     - name: get IP

@@ -1,0 +1,37 @@
+- hosts: managers
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: Create encrypted overlay net
+      shell: docker network create --opt encrypted -d overlay --attachable encnet1
+      args:
+        chdir: $HOME
+        creates: net-create-enc.log
+
+    - name: Start gitlab container
+      shell: |
+        docker run -d \
+          -p {{ manager_public_ip }}:9922:22 \
+          --env GITLAB_OMNIBUS_CONFIG="gitlab_rails['initial_shared_runners_registration_token'] = \"{{ gitlab_registration_token }}\";" \
+          --network encnet1
+          --name gitlab \
+          --restart always \
+          --volume /srv/gitlab/config:/etc/gitlab \
+          --volume /srv/gitlab/logs:/var/log/gitlab \
+          --volume /srv/gitlab/data:/var/opt/gitlab \
+          gitlab/gitlab-ce:latest >> run-gitlab.log
+      register: init-gitlab
+      args:
+        chdir: $HOME
+        creates: run-gitlab.log
+
+    - name: waiting for gitlab container to get ready
+      when: init-gitlab is succeeded
+      pause:
+        seconds: 60
+#
+# - hosts: all
+#   become: yes
+#   gather_facts: false
+#   tasks:
+#     - name: Install gitlab-runner
