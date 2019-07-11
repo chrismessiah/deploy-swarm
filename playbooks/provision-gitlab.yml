@@ -3,7 +3,7 @@
   gather_facts: false
   tasks:
     - name: Create encrypted overlay net
-      shell: docker network create --opt encrypted -d overlay --attachable encnet1
+      shell: docker network create --opt encrypted -d overlay --attachable encnet1 >> net-create-enc.log
       args:
         chdir: $HOME
         creates: net-create-enc.log
@@ -13,7 +13,7 @@
         docker run -d \
           -p {{ manager_public_ip }}:9922:22 \
           --env GITLAB_OMNIBUS_CONFIG="gitlab_rails['initial_shared_runners_registration_token'] = \"{{ gitlab_registration_token }}\";" \
-          --network encnet1
+          --network encnet1 \
           --name gitlab \
           --restart always \
           --volume /srv/gitlab/config:/etc/gitlab \
@@ -29,9 +29,34 @@
       when: init-gitlab is succeeded
       pause:
         seconds: 60
-#
-# - hosts: all
-#   become: yes
-#   gather_facts: false
-#   tasks:
-#     - name: Install gitlab-runner
+
+- hosts: all
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: Create gitlab-runner container
+      shell: |
+        docker run -d \
+          --name gitlab-runner \
+          --network encnet1 \
+          --restart always \
+          -v /srv/gitlab-runner/config:/etc/gitlab-runner \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          gitlab/gitlab-runner:latest >> gitlab-runner.log
+      args:
+        chdir: $HOME
+        creates: gitlab-runner.log
+
+    - name: Register gitlab-runner
+      shell: |
+        docker exec gitlab-runner /bin/bash -c "
+          gitlab-runner register \
+            -n \
+            --url http://gitlab \
+            --clone-url http://gitlab \
+            --registration-token {{ gitlab_registration_token }} \
+            --executor docker
+        " >> gitlab-runner-register.log
+      args:
+        chdir: $HOME
+        creates: gitlab-runner.log
