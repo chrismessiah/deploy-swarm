@@ -1,3 +1,7 @@
+# Pre-requisites
+
+* `pip install docker`
+
 # Deploy Docker Swarm
 
 ```sh

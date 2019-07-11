@@ -2,24 +2,56 @@
   become: yes
   gather_facts: false
   tasks:
-    - name: add certbot's ppa repo
-      apt_repository:
-        repo: ppa:certbot/certbot
-        state: present
-
-    - name: install nginx and certbot and PIP
+    - name: install PIP
       apt:
-        name: ["nginx", "certbot", "python-certbot-nginx", "python3-pip"]
+        name: ["python3-pip"]
         state: present
         update_cache: true
 
-    - name: install Mustache templating engine
+    - name: install python modules
       pip:
-        name: pystache
+        name:
+          - pystache
+          - docker
+
+    - name: Creates nginx-cert Dockerfile dir
+      file:
+        path: ~/nginx-cert
+        state: directory
+
+    - name: send nginx Dockerfile
+      copy:
+        src: ../assets/nginx/Dockerfile
+        dest: ~/nginx-cert/Dockerfile
+
+    - name: build nginx-cert
+      docker_image:
+        build:
+          path: nginx-cert/
+        name: nginx-cert
+        source: build
+
+    - name: Create nginx container
+      docker_container:
+        name: nginx-cert
+        image: nginx-cert
+        state: started
+        ports:
+          - "80:80"
+          - "443:443"
+        volumes:
+          - /etc/letsencrypt/:/etc/letsencrypt/
+          - /etc/nginx/conf.d:/etc/nginx/conf.d
+
+    - name: Create hello-world container
+      docker_container:
+        name: hello-world
+        image: chrismessiah/hello-world
+        state: started
 
     - name: send nginx template file
       copy:
-        src: ../assets/nginx-conf/template.conf.nginx
+        src: ../assets/nginx/template.conf.nginx
         dest: /etc/nginx/conf.d/template.conf.nginx
 
     - name: get IP
@@ -32,20 +64,20 @@
       set_fact: domain={{ ip.stdout }}.nip.io
 
     - name: get letsencrypt cert
-      shell: certbot certonly --nginx --register-unsafely-without-email --agree-tos -d {{ domain }} >> certbot.log
+      shell: docker exec nginx-cert certbot certonly --nginx --register-unsafely-without-email --agree-tos -d {{ domain }} >> certbot.log
       args:
         chdir: $HOME
         creates: certbot.log
 
     - name: Create nginx config for a site
-      shell: pystache "$(cat template.conf.nginx)" '{"domain":"{{ domain }}"}' >> site1.conf
+      shell: pystache "$(cat template.conf.nginx)" '{"domain":"{{ domain }}","internal_url":"http://hello-world"}' >> site1.conf
       args:
         chdir: /etc/nginx/conf.d/
         creates: site1.conf
 
-    - name: Restart NGINX
-      systemd:
-        name: nginx
-        state: restarted
-        enabled: yes
-        daemon_reload: yes
+    - name: restart nginx container
+      docker_container:
+        name: nginx-cert
+        image: nginx-cert
+        state: started
+        restart: yes
