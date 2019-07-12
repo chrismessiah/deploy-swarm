@@ -1,3 +1,23 @@
+- hosts: managers
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: get docker networks
+      shell: docker network ls -f name=encovnet1 -q
+      register: dock_net
+
+    - name: register overlay network
+      when: dock_net.stdout == ""
+      shell: docker network create --opt encrypted -d overlay --attachable encovnet1
+
+    # - name: Create a network with driver options
+    #   docker_network:
+    #     name: encovnet1
+    #     driver: overlay
+    #     attachable: true
+    #     driver_options:
+    #       com.docker.network.bridge.name: net2
+
 - hosts: all
   become: yes
   gather_facts: false
@@ -36,6 +56,9 @@
         name: nginx-cert
         image: nginx-cert
         state: started
+        purge_networks: yes
+        networks:
+          - name: encovnet1
         ports:
           - "80:80"
           - "443:443"
@@ -48,6 +71,9 @@
         name: hello-world
         image: chrismessiah/hello-world
         state: started
+        purge_networks: yes
+        networks:
+          - name: encovnet1
 
     - name: send nginx template file
       copy:
@@ -70,7 +96,7 @@
         creates: certbot.log
 
     - name: Create nginx config for a site
-      shell: pystache "$(cat template.conf.nginx)" '{"domain":"{{ domain }}","internal_url":"http://hello-world"}' >> site1.conf
+      shell: pystache "$(cat template.conf.nginx)" '{"domain":"{{ domain }}","internal_url":"http://hello-world:3000"}' >> site1.conf
       args:
         chdir: /etc/nginx/conf.d/
         creates: site1.conf
@@ -80,4 +106,13 @@
         name: nginx-cert
         image: nginx-cert
         state: started
+        purge_networks: yes
+        networks:
+          - name: encovnet1
         restart: yes
+        ports:
+          - "80:80"
+          - "443:443"
+        volumes:
+          - /etc/letsencrypt/:/etc/letsencrypt/
+          - /etc/nginx/conf.d:/etc/nginx/conf.d
